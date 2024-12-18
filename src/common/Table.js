@@ -11,14 +11,18 @@ import {
   CircularProgress,
   Typography,
 } from "@mui/material";
-import { getAllProducts } from "../api/api";
+import { getAllProducts, deleteProduct } from "../api/api";
 import { useProductContext } from "../util/ProductContext";
+import UpdateProduct from "../updateProduct/UpdateProduct";
 
 const TableComponent = () => {
   const { products } = useProductContext(); // Get dynamically added products
   const [fetchedProducts, setFetchedProducts] = useState([]); // Fetch existing data
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
+
+  const [openModal, setOpenModal] = useState(false); // State for UpdateProduct modal
+  const [selectedProduct, setSelectedProduct] = useState(null); // Product to be updated
 
   // Fetch existing products on mount
   useEffect(() => {
@@ -37,12 +41,27 @@ const TableComponent = () => {
     fetchData();
   }, []);
 
-  const handleUpdate = (id) => {
-    alert(`Update row with ID: ${id}`);
+  const handleUpdate = (product) => {
+    setSelectedProduct(product);
+    setOpenModal(true);
   };
 
-  const handleDelete = (id) => {
-    alert(`Delete row with ID: ${id}`);
+  const handleUpdateSuccess = (updatedProduct) => {
+    // Update the product in the fetchedProducts array
+    setFetchedProducts((prev) =>
+      prev.map((item) => (item.id === updatedProduct.id ? updatedProduct : item))
+    );
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteProduct({ productId: id });
+      // Remove the deleted product from fetchedProducts
+      setFetchedProducts((prev) => prev.filter((item) => item.id !== id));
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      alert("Failed to delete product. Check console for details.");
+    }
   };
 
   if (isLoading) {
@@ -65,54 +84,66 @@ const TableComponent = () => {
   const allProducts = [...fetchedProducts, ...products];
 
   return (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Type</TableCell>
-            <TableCell>Name</TableCell>
-            <TableCell>Description</TableCell>
-            <TableCell>Update</TableCell>
-            <TableCell>Delete</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {allProducts.length === 0 ? (
+    <>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
             <TableRow>
-              <TableCell colSpan={5} align="center">
-                No products available.
-              </TableCell>
+              <TableCell>ID</TableCell>
+              <TableCell>Type</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Update</TableCell>
+              <TableCell>Delete</TableCell>
             </TableRow>
-          ) : (
-            allProducts.map((row, index) => (
-              <TableRow key={row.id || index}>
-                <TableCell>{row.type}</TableCell>
-                <TableCell>{row.name}</TableCell>
-                <TableCell>{row.description}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleUpdate(row.id)}
-                  >
-                    Update
-                  </Button>
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={() => handleDelete(row.id)}
-                  >
-                    Delete
-                  </Button>
+          </TableHead>
+          <TableBody>
+            {allProducts.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} align="center">
+                  No products available.
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </TableContainer>
+            ) : (
+              allProducts.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell>{row.id}</TableCell>
+                  <TableCell>{row.type}</TableCell>
+                  <TableCell>{row.name}</TableCell>
+                  <TableCell>{row.description}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => handleUpdate(row)}
+                    >
+                      Update
+                    </Button>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={() => handleDelete(row.id)}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {selectedProduct && (
+        <UpdateProduct
+          open={openModal}
+          onClose={() => setOpenModal(false)}
+          product={selectedProduct}
+          onUpdateSuccess={handleUpdateSuccess}
+        />
+      )}
+    </>
   );
 };
 
