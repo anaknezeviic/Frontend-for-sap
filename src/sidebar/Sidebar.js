@@ -6,7 +6,7 @@ const Sidebar = () => {
   const pages = [
     { name: "Insurance products", path: "/" },
     { name: "Coverages", path: "/page2" },
-    { name: "Page 3", path: "/page3" },
+    { name: "Rules", path: "/page3" },
   ];
 
   return (

@@ -11,7 +11,7 @@ import {
   CircularProgress,
   Typography,
 } from "@mui/material";
-import { getAllProducts, deleteCoverage } from "../api/api";
+import { getAllCoverages, deleteCoverage } from "../api/api";
 
 const TableCoverage = () => {
   const [coverages, setCoverages] = useState([]);
@@ -19,33 +19,24 @@ const TableCoverage = () => {
   const [isError, setIsError] = useState(false);
 
   useEffect(() => {
-    const fetchCoveragesFromProducts = async () => {
+    const fetchCoverages = async () => {
       try {
-        // Fetch products including their coverages
-        const products = await getAllProducts();
-
-        // Flatten the coverages and attach product names
-        const allCoverages = products.flatMap((product) =>
-          product.coverages.map((coverage) => ({
-            ...coverage,
-            insuranceProductName: product.name, // Attach product name to each coverage
-          }))
-        );
-
-        allCoverages.sort((a, b) => a.coverageName.localeCompare(b.coverageName));
-        console.log("Mapped Coverages with Product Names:", allCoverages); // Debugging
-        setCoverages(allCoverages);
+        // Fetch coverages directly from the endpoint
+        const data = await getAllCoverages();
+        console.log("Fetched Coverages:", data); // Debugging
+        setCoverages(data || []); // Set coverages or fallback to empty array
         setIsLoading(false);
       } catch (error) {
-        console.error("Error fetching products or coverages:", error);
+        console.error("Error fetching coverages:", error);
         setIsError(true);
         setIsLoading(false);
       }
     };
 
-    fetchCoveragesFromProducts();
+    fetchCoverages();
   }, []);
 
+  
   const handleDelete = async (id) => {
     try {
       await deleteCoverage({ coverageId: id });
@@ -93,14 +84,13 @@ const TableCoverage = () => {
             <TableCell>Benefit Amount</TableCell>
             <TableCell>Premium Amount</TableCell>
             <TableCell>Description</TableCell>
-            <TableCell>Product Name</TableCell>
-            <TableCell>Delete</TableCell>
+            <TableCell>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {coverages.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} align="center">
+              <TableCell colSpan={6} align="center">
                 No coverages available.
               </TableCell>
             </TableRow>
@@ -112,7 +102,6 @@ const TableCoverage = () => {
                 <TableCell>{coverage.benefitAmount}</TableCell>
                 <TableCell>{coverage.premiumAmount}</TableCell>
                 <TableCell>{coverage.description}</TableCell>
-                <TableCell>{coverage.insuranceProductName}</TableCell>
                 <TableCell>
                   <Button
                     variant="contained"

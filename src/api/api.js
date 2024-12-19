@@ -5,7 +5,7 @@ export const createProduct = async ({ type, name, description }) => {
   const response = await axios.post(`http://localhost:8080/api/products`, {
     type,
     name,
-    description,
+    description
   });
   return response.data;
 };
@@ -58,3 +58,32 @@ export const deleteCoverage = async ({ coverageId }) => {
   return response.data;
 };
 
+
+export const getAllConditionalRules = async () => {
+  try {
+    const response = await axios.get("http://localhost:8080/api/coverage/rules/conditional/all");
+    console.log("Fetched conditional rules:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching conditional rules:", error);
+    throw error;
+  }
+};
+
+
+export const addConditionalCoverageRule = async ({ requiredCoverageId, dependentCoverageId }) => {
+  const response = await axios.post(`http://localhost:8080/api/coverage/rules/conditional`, {
+    requiredCoverageId,
+    dependentCoverageId,
+  });
+  return response.data;
+};
+
+export const addCoverageDiscountRule = async ({ triggerCoverageId, discountCoverageId, discountPercentage }) => {
+  const response = await axios.post(`http://localhost:8080/api/coverage/rules/discount`, {
+    triggerCoverageId,
+    discountCoverageId,
+    discountPercentage,
+  });
+  return response.data;
+};
