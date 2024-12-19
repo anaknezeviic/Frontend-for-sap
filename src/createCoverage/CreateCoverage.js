@@ -42,32 +42,40 @@ const CreateCoverage = ({ open, onClose, insuranceProducts }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-  
-    // Ensure numeric fields only allow positive numbers
+
     if (name === "benefitAmount" || name === "premiumAmount") {
-      if (isNaN(value) || value < 0) {
-        return; // Ignore invalid input
-      }
+      const numericValue = value.replace(/,/g, "");
+      if (isNaN(numericValue) || numericValue < 0) return;
+      const formattedValue = Number(numericValue).toLocaleString("en-US");
+      setFormData({
+        ...formData,
+        [name]: formattedValue,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
     }
-  
-    setFormData({
-      ...formData,
-      [name]: typeof value === "string" ? value.trim() : value, // Safely handle different types
-    });
   };
-  
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.coverageName || !formData.insuranceProductId) {
-      setError("Coverage Name and Insurance Product are required.");
+    if (
+      !formData.coverageName ||
+      !formData.insuranceProductId ||
+      !formData.benefitAmount ||
+      !formData.premiumAmount ||
+      !formData.description
+    ) {
+      setError("All fields are required!");
       return;
     }
 
     mutation.mutate({
       ...formData,
-      benefitAmount: parseFloat(formData.benefitAmount),
-      premiumAmount: parseFloat(formData.premiumAmount),
+      benefitAmount: formData.benefitAmount.replace(/,/g, "").trim(),
+      premiumAmount: formData.premiumAmount.replace(/,/g, "").trim(),
     });
   };
 
@@ -93,7 +101,7 @@ const CreateCoverage = ({ open, onClose, insuranceProducts }) => {
           value={formData.benefitAmount}
           onChange={handleChange}
           margin="normal"
-          inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }} // Enforces numeric input
+          type="text"
         />
         <TextField
           fullWidth
@@ -102,7 +110,7 @@ const CreateCoverage = ({ open, onClose, insuranceProducts }) => {
           value={formData.premiumAmount}
           onChange={handleChange}
           margin="normal"
-          inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }} // Enforces numeric input
+          type="text"
         />
         <TextField
           fullWidth
@@ -118,12 +126,17 @@ const CreateCoverage = ({ open, onClose, insuranceProducts }) => {
           value={formData.insuranceProductId}
           onChange={handleChange}
           margin="normal"
+          displayEmpty
         >
-          {insuranceProducts.map((product) => (
-            <MenuItem key={product.id} value={product.id}>
-              {product.name}
-            </MenuItem>
-          ))}
+          <MenuItem value="" disabled>
+            Select an Insurance Product
+          </MenuItem>
+          {Array.isArray(insuranceProducts) &&
+            insuranceProducts.map((product) => (
+              <MenuItem key={product.id} value={product.id}>
+                {product.name}
+              </MenuItem>
+            ))}
         </Select>
         <Box sx={{ mt: 2, display: "flex", justifyContent: "space-between" }}>
           <Button

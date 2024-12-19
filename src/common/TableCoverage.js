@@ -32,6 +32,7 @@ const TableCoverage = () => {
           }))
         );
 
+        allCoverages.sort((a, b) => a.coverageName.localeCompare(b.coverageName));
         console.log("Mapped Coverages with Product Names:", allCoverages); // Debugging
         setCoverages(allCoverages);
         setIsLoading(false);
