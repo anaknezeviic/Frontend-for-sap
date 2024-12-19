@@ -10,8 +10,10 @@ export const createProduct = async ({ type, name, description }) => {
   return response.data;
 };
 
-export const getAllProducts = async () => {
-    const response = await axios.get(`http://localhost:8080/api/products/all`);
+export const getAllProducts = async (name = "") => {
+  const response = await axios.get("http://localhost:8080/api/products/all", {
+    params: { name }, 
+  });
     return response.data;
 };
 
@@ -26,3 +28,4 @@ export const deleteProduct = async ({ productId}) => {
   const response = await axios.delete(`http://localhost:8080/api/products/${productId}`);
   return response.data;
 };
+
