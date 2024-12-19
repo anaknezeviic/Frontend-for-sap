@@ -4,6 +4,7 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { ProductProvider } from './util/ProductContext';
+import { CoverageProvider } from "./util/CoverageContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const queryClient = new QueryClient();
@@ -13,7 +14,9 @@ root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <ProductProvider>
-        <App />
+        <CoverageProvider>
+          <App />
+        </CoverageProvider>
       </ProductProvider>
     </QueryClientProvider>
   </React.StrictMode>

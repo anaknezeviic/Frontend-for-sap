@@ -12,20 +12,49 @@ export const createProduct = async ({ type, name, description }) => {
 
 export const getAllProducts = async (name = "") => {
   const response = await axios.get("http://localhost:8080/api/products/all", {
-    params: { name }, 
+    params: { name },
   });
-    return response.data;
+  return response.data;
 };
 
 export const updateProduct = async ({ productId, changes }) => {
-  const response = await axios.patch(`http://localhost:8080/api/products/${productId}`, 
+  const response = await axios.patch(`http://localhost:8080/api/products/${productId}`,
     changes
   );
   return response.data;
 };
 
-export const deleteProduct = async ({ productId}) => {
+export const deleteProduct = async ({ productId }) => {
   const response = await axios.delete(`http://localhost:8080/api/products/${productId}`);
+  return response.data;
+};
+
+
+export const createCoverage = async ({
+  coverageName,
+  benefitAmount,
+  premiumAmount,
+  description,
+  insuranceProductId,
+}) => {
+  const response = await axios.post(`http://localhost:8080/api/coverage`, {
+    coverageName,
+    benefitAmount,
+    premiumAmount,
+    description,
+    insuranceProductId,
+  });
+  return response.data;
+};
+
+export const getAllCoverages = async () => {
+  const response = await axios.get("http://localhost:8080/api/coverage/all");
+  return response.data;
+};
+
+
+export const deleteCoverage = async ({ coverageId }) => {
+  const response = await axios.delete(`http://localhost:8080/api/coverage/${coverageId}`);
   return response.data;
 };
 

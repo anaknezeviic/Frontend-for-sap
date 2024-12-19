@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 const Sidebar = () => {
   const pages = [
     { name: "Insurance products", path: "/" },
-    { name: "Page 2", path: "/page2" },
+    { name: "Coverages", path: "/page2" },
     { name: "Page 3", path: "/page3" },
   ];
 
