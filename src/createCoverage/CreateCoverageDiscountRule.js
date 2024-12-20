@@ -1,117 +1,159 @@
-import React, { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { addCoverageDiscountRule, getAllCoverages } from "../api/api";
+import React, { useState, useEffect } from "react";
 import {
-    Box,
-    Button,
-    CircularProgress,
-    TextField,
-    Alert,
-    MenuItem,
+  Button,
+  TextField,
+  Modal,
+  Box,
+  Typography,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
+import { useMutation } from "@tanstack/react-query";
+import { getAllCoverages, postDiscountedCoverage } from "../api/api";
 
-const AddCoverageDiscountRule = ({ onRuleAdded }) => {
-    const [formData, setFormData] = useState({
+const CreateCoverageDiscountRule = ({ open, onClose, onAddRule }) => {
+  const [coverages, setCoverages] = useState([]);
+  const [formData, setFormData] = useState({
+    triggerCoverageId: "",
+    discountCoverageId: "",
+    discountPercentage: "",
+  });
+  const [error, setError] = useState(null);
+
+  // Fetch coverages on component mount
+  useEffect(() => {
+    const fetchCoverages = async () => {
+      try {
+        const coveragesData = await getAllCoverages();
+        setCoverages(coveragesData || []);
+      } catch (err) {
+        console.error("Failed to fetch coverages:", err);
+        setError("Error fetching coverages");
+      }
+    };
+
+    fetchCoverages();
+  }, []);
+
+  const mutation = useMutation({
+    mutationFn: postDiscountedCoverage,
+    onSuccess: (newRule) => {
+      console.log("New Discount Rule Added:", newRule);
+
+      // Notify parent to add the new rule
+      onAddRule(newRule);
+
+      // Reset form data and close modal
+      setFormData({
         triggerCoverageId: "",
         discountCoverageId: "",
         discountPercentage: "",
-    });
-    const [error, setError] = useState(null);
+      });
+      onClose();
+    },
+    onError: (err) => {
+      console.error("Failed to add discount rule:", err);
+      setError("Error adding discount rule");
+    },
+  });
 
-    const { data: coverages, isLoading } = useQuery({
-        queryKey: ["coverages"],
-        queryFn: getAllCoverages,
-    });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-    const mutation = useMutation({
-        mutationFn: addCoverageDiscountRule,
-        onSuccess: (data) => {
-            onRuleAdded(data);
-            setFormData({
-                triggerCoverageId: "",
-                discountCoverageId: "",
-                discountPercentage: "",
-            });
-            setError(null);
-        },
-        onError: (error) => {
-            setError(error.message);
-        },
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Payload:", {
+      triggerCoverageId: formData.triggerCoverageId,
+      discountCoverageId: formData.discountCoverageId,
+      discountPercentage: formData.discountPercentage,
     });
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-    };
+    mutation.mutate({
+      triggerCoverageId: parseInt(formData.triggerCoverageId, 10),
+      discountCoverageId: parseInt(formData.discountCoverageId, 10),
+      discountPercentage: parseFloat(formData.discountPercentage),
+    });
+  };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        mutation.mutate(formData);
-    };
-
-    if (isLoading) {
-        return (
-            <Box sx={{ textAlign: "center", p: 2 }}>
-                <CircularProgress />
-            </Box>
-        );
-    }
-
-    return (
-        <Box>
-            {error && <Alert severity="error">{error}</Alert>}
-            <form onSubmit={handleSubmit}>
-                <TextField
-                    select
-                    fullWidth
-                    label="Trigger Coverage"
-                    name="triggerCoverageId"
-                    value={formData.triggerCoverageId}
-                    onChange={handleChange}
-                    margin="normal"
-                >
-                    {coverages.map((coverage) => (
-                        <MenuItem key={coverage.id} value={coverage.id}>
-                            {coverage.coverageName}
-                        </MenuItem>
-                    ))}
-                </TextField>
-                <TextField
-                    select
-                    fullWidth
-                    label="Discount Coverage"
-                    name="discountCoverageId"
-                    value={formData.discountCoverageId}
-                    onChange={handleChange}
-                    margin="normal"
-                >
-                    {(coverages || []).map((coverage) => (
-                        <MenuItem key={coverage.id} value={coverage.id}>
-                            {coverage.coverageName}
-                        </MenuItem>
-                    ))}
-
-                </TextField>
-                <TextField
-                    fullWidth
-                    label="Discount Percentage"
-                    name="discountPercentage"
-                    value={formData.discountPercentage}
-                    onChange={handleChange}
-                    margin="normal"
-                />
-                <Button
-                    type="submit"
-                    variant="contained"
-                    color="secondary"
-                    fullWidth
-                    disabled={mutation.isLoading}
-                >
-                    {mutation.isLoading ? "Adding..." : "Add Coverage Discount Rule"}
-                </Button>
-            </form>
-        </Box>
-    );
+  return (
+    <Modal open={open} onClose={onClose}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 400,
+          bgcolor: "background.paper",
+          boxShadow: 24,
+          p: 4,
+        }}
+      >
+        <Typography variant="h6" component="h2">
+          Create Discount Rule
+        </Typography>
+        {error && <Alert severity="error">{error}</Alert>}
+        <form onSubmit={handleSubmit}>
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="trigger-coverage-label">Trigger Coverage</InputLabel>
+            <Select
+              labelId="trigger-coverage-label"
+              name="triggerCoverageId"
+              value={formData.triggerCoverageId}
+              onChange={handleChange}
+            >
+              <MenuItem value="">Select Trigger Coverage</MenuItem>
+              {coverages.map((coverage) => (
+                <MenuItem key={coverage.id} value={coverage.id}>
+                  {coverage.coverageName}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="discount-coverage-label">Discount Coverage</InputLabel>
+            <Select
+              labelId="discount-coverage-label"
+              name="discountCoverageId"
+              value={formData.discountCoverageId}
+              onChange={handleChange}
+            >
+              <MenuItem value="">Select Discount Coverage</MenuItem>
+              {coverages.map((coverage) => (
+                <MenuItem key={coverage.id} value={coverage.id}>
+                  {coverage.coverageName}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <TextField
+            fullWidth
+            margin="normal"
+            label="Discount Percentage"
+            name="discountPercentage"
+            type="number"
+            value={formData.discountPercentage}
+            onChange={handleChange}
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={mutation.isLoading}
+            sx={{ mt: 2 }}
+          >
+            {mutation.isLoading ? <CircularProgress size={24} /> : "Add Rule"}
+          </Button>
+        </form>
+      </Box>
+    </Modal>
+  );
 };
 
-export default AddCoverageDiscountRule;
+export default CreateCoverageDiscountRule;

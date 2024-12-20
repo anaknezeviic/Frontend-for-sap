@@ -65,22 +65,23 @@ const TableCoverageConditional = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rules.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={3} align="center">
-                No conditional rules available.
-              </TableCell>
-            </TableRow>
-          ) : (
-            rules.map((rule) => (
-              <TableRow key={rule.id}>
-                <TableCell>{rule.id}</TableCell>
-                <TableCell>{rule.requiredCoverageId || "N/A"}</TableCell>
-                <TableCell>{rule.dependentCoverageId || "N/A"}</TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
+  {rules.length === 0 ? (
+    <TableRow>
+      <TableCell colSpan={3} align="center">
+        No conditional rules available.
+      </TableCell>
+    </TableRow>
+  ) : (
+    rules.map((rule) => (
+      <TableRow key={rule.id}> {/* Add key here */}
+        <TableCell>{rule.id}</TableCell>
+        <TableCell>{rule.requiredCoverageId || "N/A"}</TableCell>
+        <TableCell>{rule.dependentCoverageId || "N/A"}</TableCell>
+      </TableRow>
+    ))
+  )}
+</TableBody>
+
       </Table>
     </TableContainer>
   );

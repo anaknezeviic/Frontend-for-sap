@@ -49,8 +49,13 @@ export const createCoverage = async ({
 
 export const getAllCoverages = async () => {
   const response = await axios.get("http://localhost:8080/api/coverage/all");
-  return response.data;
+  console.log("Fetched Coverages:", response.data); // Debugging
+  // Ensure data is consistent and always an array of objects
+  return Array.isArray(response.data)
+    ? response.data.filter((item) => typeof item === "object")
+    : [];
 };
+
 
 
 export const deleteCoverage = async ({ coverageId }) => {
@@ -79,11 +84,21 @@ export const addConditionalCoverageRule = async ({ requiredCoverageId, dependent
   return response.data;
 };
 
-export const addCoverageDiscountRule = async ({ triggerCoverageId, discountCoverageId, discountPercentage }) => {
-  const response = await axios.post(`http://localhost:8080/api/coverage/rules/discount`, {
-    triggerCoverageId,
-    discountCoverageId,
-    discountPercentage,
+export const getAllDiscountRules = async () => {
+  const response = await axios.get("http://localhost:8080/api/coverage/rules/discount/all");
+  return response.data;
+};
+
+export const postDiscountedCoverage = async (data) => {
+  const response = await axios.post(`http://localhost:8080/api/coverage/rules/discount`, data, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
   });
+  return response.data;
+};
+
+export const deleteCoverageDiscountRule = async ({ ruleId }) => {
+  const response = await axios.delete(`http://localhost:8080/api/coverage/rules/discount/${ruleId}`);
   return response.data;
 };

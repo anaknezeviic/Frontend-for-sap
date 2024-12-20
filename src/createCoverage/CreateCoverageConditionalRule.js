@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { getAllConditionalRules, addConditionalCoverageRule, getAllCoverages } from "../api/api";
+import {
+  getAllConditionalRules,
+  addConditionalCoverageRule,
+  getAllCoverages,
+} from "../api/api";
 import {
   Box,
   TextField,
@@ -16,10 +20,13 @@ import {
   Paper,
 } from "@mui/material";
 
-const ConditionalRules = () => {
+const CreateCoverageConditionalRule = ({ onRuleAdded }) => {
   const [rules, setRules] = useState([]);
   const [coverages, setCoverages] = useState([]);
-  const [formData, setFormData] = useState({ requiredCoverageId: "", dependentCoverageId: "" });
+  const [formData, setFormData] = useState({
+    requiredCoverageId: "",
+    dependentCoverageId: "",
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -31,11 +38,14 @@ const ConditionalRules = () => {
           getAllConditionalRules(),
           getAllCoverages(),
         ]);
+        console.log("Raw Rules Data: ", rulesData);
+        console.log("Raw Coverages Data: ", coveragesData);
+
         setRules(
           rulesData.map((rule) => ({
             ...rule,
-            requiredCoverage: coveragesData.find((c) => c.id === rule.requiredCoverageId),
-            dependentCoverage: coveragesData.find((c) => c.id === rule.dependentCoverageId),
+            requiredCoverage: coveragesData.find((c) => c.id === rule.requiredCoverageId) || null,
+            dependentCoverage: coveragesData.find((c) => c.id === rule.dependentCoverageId) || null,
           }))
         );
         setCoverages(coveragesData || []);
@@ -47,7 +57,9 @@ const ConditionalRules = () => {
       }
     };
     fetchRulesAndCoverages();
-  }, []);
+  }, []); // Only run on component mount
+
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -58,27 +70,31 @@ const ConditionalRules = () => {
     e.preventDefault();
     try {
       setLoading(true);
-  
-      // Add the new rule to the backend
+
+      // API call to create new rule
       const newRule = await addConditionalCoverageRule(formData);
-  
-      // Find the associated coverage objects without modifying the original state
-      const requiredCoverage = coverages.find((c) => c.id === parseInt(formData.requiredCoverageId, 10));
-      const dependentCoverage = coverages.find((c) => c.id === parseInt(formData.dependentCoverageId, 10));
-  
-      // Create a new rule object without modifying coverages or other states
-      setRules((prev) => [
-        ...prev,
-        {
-          id: newRule.id,
-          requiredCoverageId: newRule.requiredCoverageId,
-          dependentCoverageId: newRule.dependentCoverageId,
-          requiredCoverage,
-          dependentCoverage,
-        },
-      ]);
-  
-      // Reset form data
+      console.log("New Rule Added:", newRule);
+
+      // Find required and dependent coverages
+      const requiredCoverage = coverages.find(
+        (c) => c.id === parseInt(formData.requiredCoverageId, 10)
+      );
+      const dependentCoverage = coverages.find(
+        (c) => c.id === parseInt(formData.dependentCoverageId, 10)
+      );
+
+      // Add new rule to state
+      const updatedRule = {
+        ...newRule,
+        requiredCoverage,
+        dependentCoverage,
+      };
+
+      setRules((prev) => [...prev, updatedRule]);
+
+      // Pass new rule to parent for global update (if applicable)
+      onRuleAdded?.(updatedRule);
+
       setFormData({ requiredCoverageId: "", dependentCoverageId: "" });
       setLoading(false);
     } catch (err) {
@@ -87,7 +103,6 @@ const ConditionalRules = () => {
       setLoading(false);
     }
   };
-  
 
   if (loading) {
     return (
@@ -104,6 +119,7 @@ const ConditionalRules = () => {
       </Typography>
       {error && <Alert severity="error">{error}</Alert>}
       <form onSubmit={handleSubmit}>
+        {/* For Coverage Options */}
         <TextField
           fullWidth
           select
@@ -116,11 +132,12 @@ const ConditionalRules = () => {
         >
           <option value="">Select Required Coverage</option>
           {coverages.map((coverage) => (
-            <option key={coverage.id} value={coverage.id}>
+            <option key={coverage.id} value={coverage.id}> {/* Add key */}
               {coverage.coverageName}
             </option>
           ))}
         </TextField>
+
         <TextField
           fullWidth
           select
@@ -175,4 +192,4 @@ const ConditionalRules = () => {
   );
 };
 
-export default ConditionalRules;
+export default CreateCoverageConditionalRule;

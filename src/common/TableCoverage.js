@@ -88,33 +88,34 @@ const TableCoverage = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {coverages.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={6} align="center">
-                No coverages available.
-              </TableCell>
-            </TableRow>
-          ) : (
-            coverages.map((coverage) => (
-              <TableRow key={coverage.id}>
-                <TableCell>{coverage.id}</TableCell>
-                <TableCell>{coverage.coverageName}</TableCell>
-                <TableCell>{coverage.benefitAmount}</TableCell>
-                <TableCell>{coverage.premiumAmount}</TableCell>
-                <TableCell>{coverage.description}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={() => handleDelete(coverage.id)}
-                  >
-                    Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
+  {coverages.length === 0 ? (
+    <TableRow>
+      <TableCell colSpan={6} align="center">
+        No coverages available.
+      </TableCell>
+    </TableRow>
+  ) : (
+    coverages.map((coverage) => (
+      <TableRow key={coverage.id}> {/* Add key here */}
+        <TableCell>{coverage.id}</TableCell>
+        <TableCell>{coverage.coverageName}</TableCell>
+        <TableCell>{coverage.benefitAmount}</TableCell>
+        <TableCell>{coverage.premiumAmount}</TableCell>
+        <TableCell>{coverage.description}</TableCell>
+        <TableCell>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => handleDelete(coverage.id)}
+          >
+            Delete
+          </Button>
+        </TableCell>
+      </TableRow>
+    ))
+  )}
+</TableBody>
+
       </Table>
     </TableContainer>
   );

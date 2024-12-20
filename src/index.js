@@ -6,6 +6,7 @@ import reportWebVitals from './reportWebVitals';
 import { ProductProvider } from './util/ProductContext';
 import { CoverageProvider } from "./util/CoverageContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { DiscountRuleProvider } from './util/DiscountRuleContex';
 
 const queryClient = new QueryClient();
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -14,9 +15,11 @@ root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <ProductProvider>
-        <CoverageProvider>
-          <App />
-        </CoverageProvider>
+        <DiscountRuleProvider>
+          <CoverageProvider>
+            <App />
+          </CoverageProvider>
+        </DiscountRuleProvider>
       </ProductProvider>
     </QueryClientProvider>
   </React.StrictMode>
